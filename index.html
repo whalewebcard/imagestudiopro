@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Studio Pro - Compact Image Processor</title>
+    <title>Image Studio Pro - Premium Image Processor</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -40,7 +40,6 @@
             transform: scale(1.01);
         }
 
-        /* Custom Slider */
         input[type=range] {
             -webkit-appearance: none;
             background: transparent;
@@ -66,7 +65,6 @@
             border: 2px solid white;
         }
 
-        /* Compact Format Grid */
         .format-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
@@ -83,7 +81,6 @@
             box-shadow: 0 4px 10px -2px rgba(99, 102, 241, 0.3);
         }
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 4px;
         }
@@ -99,6 +96,18 @@
 
         .animate-fade-in {
             animation: fadeIn 0.4s ease-out forwards;
+        }
+        
+        .external-tool-btn {
+            transition: all 0.2s ease;
+            border: 1px solid #f1f5f9;
+        }
+        
+        .external-tool-btn:hover {
+            border-color: #e2e8f0;
+            background-color: #f8fafc;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
         }
     </style>
 </head>
@@ -116,7 +125,8 @@
 
         <main class="premium-card rounded-3xl overflow-hidden">
             <!-- Upload Area -->
-            <div id="uploadSection" class="p-6">
+            <div id="uploadSection" class="p-6 space-y-6">
+                <!-- Drop Zone -->
                 <div id="dropZone" class="drop-zone rounded-2xl p-12 text-center cursor-pointer group">
                     <input type="file" id="fileInput" class="hidden" accept="image/*">
                     <div class="space-y-4">
@@ -125,6 +135,36 @@
                             <p class="text-lg font-semibold text-slate-800">ลากไฟล์รูปภาพมาวางที่นี่</p>
                             <p class="text-slate-400 text-xs mt-1">หรือคลิกเพื่อเลือกไฟล์</p>
                         </div>
+                    </div>
+                </div>
+
+                <!-- External Tools (Moved to Home Page) -->
+                <div class="pt-4 border-t border-slate-100">
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-1 h-3 bg-indigo-500 rounded-full"></div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">เครื่องมือแนะนำเพิ่มเติม</label>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <a href="https://convertio.co/th/mp4-mp3/" target="_blank" class="external-tool-btn flex items-center p-4 rounded-2xl bg-white shadow-sm">
+                            <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center mr-4">
+                                <i class="fas fa-file-audio text-red-500 text-lg"></i>
+                            </div>
+                            <div class="flex-grow">
+                                <p class="text-sm font-bold text-slate-700">แปลงวิดีโอเป็น MP3</p>
+                                <p class="text-[10px] text-slate-400">Convert MP4 to MP3</p>
+                            </div>
+                            <i class="fas fa-external-link-alt text-[10px] text-slate-300"></i>
+                        </a>
+                        <a href="https://www.iloveimg.com/th/compress-image/compress-gif" target="_blank" class="external-tool-btn flex items-center p-4 rounded-2xl bg-white shadow-sm">
+                            <div class="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center mr-4">
+                                <i class="fas fa-film text-orange-500 text-lg"></i>
+                            </div>
+                            <div class="flex-grow">
+                                <p class="text-sm font-bold text-slate-700">บีบอัดไฟล์ GIF</p>
+                                <p class="text-[10px] text-slate-400">Compress Animated GIF</p>
+                            </div>
+                            <i class="fas fa-external-link-alt text-[10px] text-slate-300"></i>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -144,7 +184,10 @@
                     <div id="previewContainer" class="relative rounded-2xl overflow-hidden bg-white border border-slate-100 shadow-sm flex-grow min-h-[300px] flex items-center justify-center">
                         <img id="previewEl" class="max-w-full max-h-full object-contain p-2" src="" alt="Preview">
                         <div id="loader" class="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center hidden z-20">
-                            <i class="fas fa-circle-notch fa-spin text-indigo-500 text-2xl"></i>
+                            <div class="flex flex-col items-center">
+                                <i class="fas fa-circle-notch fa-spin text-indigo-500 text-2xl mb-2"></i>
+                                <span id="loaderMsg" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center px-4">Processing...</span>
+                            </div>
                         </div>
                     </div>
 
@@ -167,11 +210,10 @@
                             <i class="fas fa-cog mr-2 text-indigo-500"></i> Settings
                         </h2>
 
-                        <!-- Sliders -->
                         <div class="space-y-4">
                             <div class="space-y-3">
                                 <div class="flex justify-between items-center text-xs">
-                                    <label class="font-bold text-slate-500">Scale</label>
+                                    <label class="font-bold text-slate-500">Scale (ปรับขนาด)</label>
                                     <span id="scaleLabel" class="font-black text-indigo-600">100%</span>
                                 </div>
                                 <input type="range" id="scaleSlider" min="10" max="100" value="100" step="5" class="w-full">
@@ -179,27 +221,24 @@
 
                             <div class="space-y-3">
                                 <div class="flex justify-between items-center text-xs">
-                                    <label class="font-bold text-slate-500">Quality</label>
+                                    <label class="font-bold text-slate-500">Quality (คุณภาพ)</label>
                                     <span id="qualityLabel" class="font-black text-indigo-600">80%</span>
                                 </div>
                                 <input type="range" id="qualitySlider" min="5" max="100" value="80" class="w-full">
                             </div>
                         </div>
 
-                        <!-- Formats -->
                         <div class="space-y-3">
-                            <label class="text-xs font-bold text-slate-500 block">Format</label>
+                            <label class="text-xs font-bold text-slate-500 block">Format (นามสกุล)</label>
                             <div class="relative mb-2">
                                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 text-[10px]"></i>
                                 <input type="text" id="formatSearch" placeholder="Search..." class="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs focus:ring-1 focus:ring-indigo-400 outline-none transition-all">
                             </div>
                             <div id="formatOptionsList" class="format-grid max-h-[160px] overflow-y-auto pr-1">
-                                <!-- JS items -->
                             </div>
                         </div>
                     </div>
 
-                    <!-- Actions -->
                     <div class="pt-2 mt-auto">
                         <button id="downloadBtn" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-3.5 rounded-2xl transition-all flex items-center justify-center text-sm shadow-lg active:scale-95">
                             <i class="fas fa-download mr-2"></i> DOWNLOAD
@@ -213,11 +252,10 @@
         </main>
         
         <footer class="mt-6 text-center text-slate-400 text-[10px]">
-            <p>© 2026 Image Studio Pro • Private & Offline Processing</p>
+            <p>© 2026 Image Studio Pro • Private & Offline Processor</p>
         </footer>
     </div>
 
-    <!-- Toast -->
     <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-20 transition-all duration-300 opacity-0 z-50">
         <div class="bg-slate-900 text-white px-6 py-2.5 rounded-full shadow-xl flex items-center space-x-2 border border-slate-800">
             <i class="fas fa-check text-green-400 text-xs"></i>
@@ -233,8 +271,7 @@
             { id: 'image/avif', label: 'AVIF', ext: '.avif', icon: 'fa-magic' },
             { id: 'image/bmp', label: 'BMP', ext: '.bmp', icon: 'fa-cube' },
             { id: 'image/tiff', label: 'TIFF', ext: '.tiff', icon: 'fa-print' },
-            { id: 'image/x-icon', label: 'ICO', ext: '.ico', icon: 'fa-window-maximize' },
-            { id: 'image/gif', label: 'GIF', ext: '.gif', icon: 'fa-film' }
+            { id: 'image/x-icon', label: 'ICO', ext: '.ico', icon: 'fa-window-maximize' }
         ];
 
         const el = {
@@ -264,7 +301,8 @@
             originalImage: null,
             currentUrl: null,
             compressedBlob: null,
-            selectedFormat: 'image/jpeg'
+            selectedFormat: 'image/jpeg',
+            isProcessing: false
         };
 
         function renderFormatList(filter = '') {
@@ -283,6 +321,7 @@
                     <span class="text-[10px] font-bold">${opt.label}</span>
                 `;
                 card.onclick = () => {
+                    if (state.isProcessing) return;
                     state.selectedFormat = opt.id;
                     renderFormatList(el.formatSearch.value);
                     processImage();
@@ -307,19 +346,22 @@
         el.resetBtn.onclick = () => location.reload();
 
         el.downloadBtn.onclick = () => {
-            if (!state.compressedBlob) return;
+            if (!state.compressedBlob || state.isProcessing) return;
             const link = document.createElement('a');
             link.href = URL.createObjectURL(state.compressedBlob);
             const selectedOpt = formatOptions.find(o => o.id === state.selectedFormat);
-            link.download = `Studio_${Date.now()}${selectedOpt.ext}`;
+            link.download = `Studio_Pro_${Date.now()}${selectedOpt.ext}`;
             link.click();
             showToast('Download complete!');
         };
 
         function handleFile(file) {
-            if (!file.type.startsWith('image/')) return showToast('Images only please');
+            if (!file.type.startsWith('image/')) return showToast('กรุณาเลือกไฟล์รูปภาพ');
+            
             state.originalFile = file;
             el.originalSize.textContent = formatSize(file.size);
+            renderFormatList();
+
             const reader = new FileReader();
             reader.onload = (e) => {
                 const img = new Image();
@@ -336,35 +378,57 @@
         }
 
         let timer;
-        function processImage() {
-            if (!state.originalImage) return;
-            el.loader.classList.remove('hidden');
+        async function processImage() {
+            if (!state.originalImage || state.isProcessing) return;
+            
             clearTimeout(timer);
-            timer = setTimeout(() => {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                const scale = el.scaleSlider.value / 100;
-                const w = Math.max(1, Math.round(state.originalImage.width * scale));
-                const h = Math.max(1, Math.round(state.originalImage.height * scale));
-                canvas.width = w; canvas.height = h;
-                el.fileInfoDisplay.textContent = `${w}x${h}`;
-                ctx.imageSmoothingQuality = 'high';
-                ctx.drawImage(state.originalImage, 0, 0, w, h);
-                canvas.toBlob((blob) => {
-                    state.compressedBlob = blob;
-                    el.compressedSize.textContent = formatSize(blob.size);
-                    const red = ((1 - (blob.size / state.originalFile.size)) * 100).toFixed(0);
-                    if (red > 0) el.compressedSize.innerHTML = `${formatSize(blob.size)} <span class="text-[9px] bg-white/20 px-1.5 py-0.5 rounded-full ml-1">-${red}%</span>`;
-                    if (state.currentUrl) URL.revokeObjectURL(state.currentUrl);
-                    state.currentUrl = URL.createObjectURL(blob);
-                    el.previewEl.src = state.currentUrl;
-                    el.loader.classList.add('hidden');
-                }, state.selectedFormat, el.qualitySlider.value / 100);
-            }, 60);
+            timer = setTimeout(async () => {
+                renderCanvas();
+            }, 100);
+        }
+
+        function renderCanvas() {
+            state.isProcessing = true;
+            el.loader.classList.remove('hidden');
+            
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const scale = el.scaleSlider.value / 100;
+            const w = Math.max(1, Math.round(state.originalImage.width * scale));
+            const h = Math.max(1, Math.round(state.originalImage.height * scale));
+            canvas.width = w; canvas.height = h;
+            
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(state.originalImage, 0, 0, w, h);
+            
+            canvas.toBlob((blob) => {
+                updateResult(blob, w, h);
+                state.isProcessing = false;
+            }, state.selectedFormat, el.qualitySlider.value / 100);
+        }
+
+        function updateResult(blob, w, h) {
+            if (!blob) return;
+            state.compressedBlob = blob;
+            el.compressedSize.textContent = formatSize(blob.size);
+            el.fileInfoDisplay.textContent = `${w}x${h}`;
+            
+            const reduction = ((1 - (blob.size / state.originalFile.size)) * 100).toFixed(0);
+            if (reduction > 0) {
+                el.compressedSize.innerHTML = `${formatSize(blob.size)} <span class="text-[9px] bg-white/20 px-1.5 py-0.5 rounded-full ml-1 font-bold">-${reduction}%</span>`;
+            } else {
+                el.compressedSize.textContent = formatSize(blob.size);
+            }
+
+            if (state.currentUrl) URL.revokeObjectURL(state.currentUrl);
+            state.currentUrl = URL.createObjectURL(blob);
+            el.previewEl.src = state.currentUrl;
+            el.loader.classList.add('hidden');
         }
 
         function formatSize(b) {
-            if (!b) return '0 B';
+            if (!b || b === 0) return '0 B';
             const k = 1024, i = Math.floor(Math.log(b) / Math.log(k));
             return parseFloat((b / Math.pow(k, i)).toFixed(1)) + ' ' + ['B', 'KB', 'MB', 'GB'][i];
         }
