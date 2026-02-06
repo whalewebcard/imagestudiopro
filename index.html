@@ -3,289 +3,295 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Media Converter & Compressor - เครื่องมือจัดการสื่อครบวงจร</title>
+    <title>Image Studio Pro - Compact Image Processor</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@200;300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+        }
+
         body {
             font-family: 'Kanit', sans-serif;
-            background-color: #f1f5f9;
+            background: radial-gradient(circle at top right, #f8fafc, #eff6ff);
+            min-height: 100vh;
+            color: #1e293b;
         }
+
+        .premium-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.05);
+        }
+
         .drop-zone {
             border: 2px dashed #cbd5e1;
+            background: rgba(248, 250, 252, 0.5);
             transition: all 0.3s ease;
         }
+
         .drop-zone.drag-over {
-            border-color: #3b82f6;
-            background-color: #eff6ff;
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
             transform: scale(1.01);
         }
-        .mode-tab.active {
-            background-color: white;
-            color: #2563eb;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-        }
+
+        /* Custom Slider */
         input[type=range] {
-            accent-color: #3b82f6;
+            -webkit-appearance: none;
+            background: transparent;
         }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -6px;
+            box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
+            border: 2px solid white;
+        }
+
+        /* Compact Format Grid */
+        .format-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 8px;
+        }
+
+        .format-item {
+            transition: all 0.2s ease;
+        }
+
+        .format-item.active {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 10px -2px rgba(99, 102, 241, 0.3);
+        }
+
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
+            width: 4px;
         }
         ::-webkit-scrollbar-thumb {
             background: #cbd5e1;
             border-radius: 10px;
         }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
     </style>
 </head>
-<body class="min-h-screen py-6 px-4">
-    <div class="max-w-5xl mx-auto">
-        <!-- Header -->
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-slate-800 mb-2">
-                <i class="fas fa-photo-video text-blue-600 mr-2"></i>Media Hub
+<body class="py-6 px-4">
+    <div class="max-w-4xl mx-auto">
+        <!-- Compact Header -->
+        <header class="text-center mb-6 animate-fade-in">
+            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight mb-1">
+                Image Studio <span class="text-indigo-500">Pro</span>
             </h1>
-            <p class="text-slate-500">บีบอัดและเปลี่ยนนามสกุล รูปภาพ วิดีโอ และเสียง ได้ในที่เดียว</p>
-        </div>
+            <p class="text-slate-500 text-sm">
+                บีบอัดและแปลงไฟล์รูปภาพทันทีบนเครื่องของคุณ <span class="font-medium text-slate-700">ปลอดภัย 100%</span>
+            </p>
+        </header>
 
-        <!-- Mode Switcher -->
-        <div class="flex justify-center mb-8">
-            <div class="bg-slate-200 p-1 rounded-2xl flex space-x-1 w-full max-w-md">
-                <button onclick="setMode('image')" id="tab-image" class="mode-tab active flex-1 py-2 rounded-xl text-sm font-bold transition-all">
-                    <i class="fas fa-image mr-1"></i> รูปภาพ
-                </button>
-                <button onclick="setMode('video')" id="tab-video" class="mode-tab flex-1 py-2 rounded-xl text-sm font-bold transition-all text-slate-500">
-                    <i class="fas fa-video mr-1"></i> วิดีโอ
-                </button>
-                <button onclick="setMode('audio')" id="tab-audio" class="mode-tab flex-1 py-2 rounded-xl text-sm font-bold transition-all text-slate-500">
-                    <i class="fas fa-volume-up mr-1"></i> เสียง
-                </button>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-200">
-            <!-- Upload Section -->
-            <div id="uploadSection" class="p-10">
-                <div id="dropZone" class="drop-zone rounded-2xl p-16 text-center cursor-pointer hover:border-blue-400 hover:bg-slate-50 group">
-                    <input type="file" id="fileInput" class="hidden">
+        <main class="premium-card rounded-3xl overflow-hidden">
+            <!-- Upload Area -->
+            <div id="uploadSection" class="p-6">
+                <div id="dropZone" class="drop-zone rounded-2xl p-12 text-center cursor-pointer group">
+                    <input type="file" id="fileInput" class="hidden" accept="image/*">
                     <div class="space-y-4">
-                        <div id="modeIcon" class="text-6xl text-slate-300 group-hover:text-blue-500 transition-colors">
-                            <i class="fas fa-images"></i>
-                        </div>
+                        <i class="fas fa-cloud-arrow-up text-5xl text-slate-300 group-hover:text-indigo-500 transition-colors duration-300"></i>
                         <div>
-                            <p id="dropText" class="text-xl font-semibold text-slate-700">ลากไฟล์รูปภาพมาวางที่นี่</p>
-                            <p id="dropSubtext" class="text-sm text-slate-400 mt-2">ประมวลผลบนเครื่องคุณ 100% ปลอดภัยและรวดเร็ว</p>
+                            <p class="text-lg font-semibold text-slate-800">ลากไฟล์รูปภาพมาวางที่นี่</p>
+                            <p class="text-slate-400 text-xs mt-1">หรือคลิกเพื่อเลือกไฟล์</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Editor Section -->
-            <div id="editorSection" class="hidden grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
-                <!-- Preview Side (Left) -->
-                <div class="lg:col-span-7 p-6 bg-slate-50/50">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-bold text-slate-700 flex items-center">
-                            <i class="fas fa-play-circle mr-2 text-blue-500"></i> ตัวอย่างผลลัพธ์
-                        </h3>
-                        <span id="fileInfoDisplay" class="text-xs font-mono bg-white px-2 py-1 rounded border border-slate-200 text-slate-500">Ready</span>
+            <!-- Workspace Area -->
+            <div id="editorSection" class="hidden grid grid-cols-1 lg:grid-cols-12">
+                <!-- Preview Area -->
+                <div class="lg:col-span-7 p-5 bg-slate-50/50 flex flex-col border-b lg:border-b-0 lg:border-r border-slate-100">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                            <span class="text-xs font-bold text-slate-600 uppercase tracking-tight">Live Preview</span>
+                        </div>
+                        <span id="fileInfoDisplay" class="bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded text-[10px] font-bold font-mono">-</span>
                     </div>
-                    
-                    <div id="previewContainer" class="relative rounded-xl overflow-hidden bg-white aspect-video flex items-center justify-center border border-slate-200 shadow-inner">
-                        <div id="loader" class="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center hidden z-10">
-                            <div class="flex flex-col items-center">
-                                <i class="fas fa-circle-notch fa-spin text-blue-500 text-3xl mb-2"></i>
-                                <span id="loaderText" class="text-xs text-slate-600 font-medium tracking-wider">กำลังประมวลผล...</span>
-                                <div id="progressBar" class="w-48 h-1.5 bg-slate-200 rounded-full mt-3 overflow-hidden">
-                                    <div id="progressFill" class="h-full bg-blue-500 w-0 transition-all duration-300"></div>
-                                </div>
-                            </div>
+
+                    <div id="previewContainer" class="relative rounded-2xl overflow-hidden bg-white border border-slate-100 shadow-sm flex-grow min-h-[300px] flex items-center justify-center">
+                        <img id="previewEl" class="max-w-full max-h-full object-contain p-2" src="" alt="Preview">
+                        <div id="loader" class="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center hidden z-20">
+                            <i class="fas fa-circle-notch fa-spin text-indigo-500 text-2xl"></i>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4 mt-6">
-                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                            <p class="text-[10px] text-slate-400 uppercase font-bold tracking-widest mb-1">ขนาดต้นฉบับ</p>
-                            <p id="originalSize" class="text-lg font-bold text-slate-600">-</p>
+                    <div class="grid grid-cols-2 gap-3 mt-4">
+                        <div class="p-4 bg-white rounded-2xl border border-slate-100">
+                            <p class="text-[9px] text-slate-400 uppercase font-black tracking-widest mb-1">ต้นฉบับ</p>
+                            <p id="originalSize" class="text-lg font-bold text-slate-700">-</p>
                         </div>
-                        <div class="bg-blue-600 p-4 rounded-xl border border-blue-700 shadow-lg">
-                            <p class="text-[10px] text-blue-200 uppercase font-bold tracking-widest mb-1">ขนาดผลลัพธ์ประมาณการ</p>
+                        <div class="p-4 bg-indigo-600 rounded-2xl shadow-md">
+                            <p class="text-[9px] text-indigo-200 uppercase font-black tracking-widest mb-1">ผลลัพธ์</p>
                             <p id="compressedSize" class="text-lg font-bold text-white">-</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Controls Side (Right) -->
-                <div class="lg:col-span-5 p-6 space-y-6">
-                    <h3 class="font-bold text-slate-800 flex items-center">
-                        <i class="fas fa-sliders-h mr-2 text-slate-400"></i> การตั้งค่า
-                    </h3>
+                <!-- Control Panel -->
+                <div class="lg:col-span-5 p-6 bg-white flex flex-col space-y-6">
+                    <div class="space-y-5">
+                        <h2 class="text-sm font-black text-slate-800 uppercase tracking-wider flex items-center">
+                            <i class="fas fa-cog mr-2 text-indigo-500"></i> Settings
+                        </h2>
 
-                    <!-- Image Settings -->
-                    <div id="imageSettings" class="space-y-6">
+                        <!-- Sliders -->
                         <div class="space-y-4">
-                            <div class="flex justify-between items-center">
-                                <label class="text-sm font-semibold text-slate-600">สเกลภาพ (Scale)</label>
-                                <span id="scaleLabel" class="text-sm font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">100%</span>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center text-xs">
+                                    <label class="font-bold text-slate-500">Scale</label>
+                                    <span id="scaleLabel" class="font-black text-indigo-600">100%</span>
+                                </div>
+                                <input type="range" id="scaleSlider" min="10" max="100" value="100" step="5" class="w-full">
                             </div>
-                            <input type="range" id="scaleSlider" min="10" max="100" value="100" step="5" class="w-full">
+
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center text-xs">
+                                    <label class="font-bold text-slate-500">Quality</label>
+                                    <span id="qualityLabel" class="font-black text-indigo-600">80%</span>
+                                </div>
+                                <input type="range" id="qualitySlider" min="5" max="100" value="80" class="w-full">
+                            </div>
                         </div>
-                        <div class="space-y-4">
-                            <div class="flex justify-between items-center">
-                                <label class="text-sm font-semibold text-slate-600">คุณภาพ (Quality)</label>
-                                <span id="qualityLabel" class="text-sm font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">80%</span>
+
+                        <!-- Formats -->
+                        <div class="space-y-3">
+                            <label class="text-xs font-bold text-slate-500 block">Format</label>
+                            <div class="relative mb-2">
+                                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 text-[10px]"></i>
+                                <input type="text" id="formatSearch" placeholder="Search..." class="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs focus:ring-1 focus:ring-indigo-400 outline-none transition-all">
                             </div>
-                            <input type="range" id="qualitySlider" min="5" max="100" value="80" class="w-full">
+                            <div id="formatOptionsList" class="format-grid max-h-[160px] overflow-y-auto pr-1">
+                                <!-- JS items -->
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Video/Audio Settings -->
-                    <div id="mediaSettings" class="hidden space-y-6">
-                        <div class="space-y-4">
-                            <div class="flex justify-between items-center">
-                                <label class="text-sm font-semibold text-slate-600">คุณภาพไฟล์ (Bitrate)</label>
-                                <select id="bitrateSelect" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium">
-                                    <option value="high">คุณภาพสูง (Bitrate สูง)</option>
-                                    <option value="medium" selected>ปานกลาง (สมดุล)</option>
-                                    <option value="low">ขนาดเล็ก (Bitrate ต่ำ)</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Format Selector -->
-                    <div class="space-y-2">
-                        <label class="text-sm font-semibold text-slate-600">นามสกุลไฟล์ที่ต้องการ (Convert to)</label>
-                        <select id="formatSelect" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-medium">
-                            <!-- Injected by JS -->
-                        </select>
-                    </div>
-
-                    <div class="pt-4 space-y-3">
-                        <button id="downloadBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition duration-200 flex items-center justify-center shadow-lg active:scale-95">
-                            <i class="fas fa-magic mr-2"></i> ประมวลผลและดาวน์โหลด
+                    <!-- Actions -->
+                    <div class="pt-2 mt-auto">
+                        <button id="downloadBtn" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-3.5 rounded-2xl transition-all flex items-center justify-center text-sm shadow-lg active:scale-95">
+                            <i class="fas fa-download mr-2"></i> DOWNLOAD
                         </button>
-                        <button id="resetBtn" class="w-full bg-white text-slate-500 font-semibold py-3 rounded-xl hover:bg-slate-50 border border-slate-200 transition">
-                            เลือกไฟล์ใหม่
+                        <button id="resetBtn" class="w-full text-slate-400 hover:text-indigo-500 font-bold py-2 mt-2 text-[10px] uppercase tracking-widest transition-colors">
+                            <i class="fas fa-arrow-left mr-1"></i> New File
                         </button>
                     </div>
-                    
-                    <p class="text-[11px] text-slate-400 text-center italic">
-                        * รองรับการแปลง MP4 เป็น MP3 โดยตรงผ่านโหมดวิดีโอ
-                    </p>
                 </div>
             </div>
-        </div>
+        </main>
+        
+        <footer class="mt-6 text-center text-slate-400 text-[10px]">
+            <p>© 2026 Image Studio Pro • Private & Offline Processing</p>
+        </footer>
     </div>
 
     <!-- Toast -->
-    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 translate-y-20 transition-all duration-300 opacity-0 z-50">
-        <div class="bg-slate-800 text-white px-6 py-3 rounded-full shadow-2xl flex items-center space-x-3">
-            <i class="fas fa-info-circle text-blue-400"></i>
-            <span id="toastText">ข้อความ</span>
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-20 transition-all duration-300 opacity-0 z-50">
+        <div class="bg-slate-900 text-white px-6 py-2.5 rounded-full shadow-xl flex items-center space-x-2 border border-slate-800">
+            <i class="fas fa-check text-green-400 text-xs"></i>
+            <span id="toastText" class="font-bold text-xs">Success</span>
         </div>
     </div>
 
-    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
-
     <script>
-        const { createFFmpeg, fetchFile } = FFmpeg;
-        
-        // Single-thread version for compatibility
-        const ffmpeg = createFFmpeg({ 
-            log: false,
-            corePath: 'https://unpkg.com/@ffmpeg/core-st@0.11.0/dist/ffmpeg-core.js'
-        });
+        const formatOptions = [
+            { id: 'image/jpeg', label: 'JPEG', ext: '.jpg', icon: 'fa-file-image' },
+            { id: 'image/png', label: 'PNG', ext: '.png', icon: 'fa-file-code' },
+            { id: 'image/webp', label: 'WebP', ext: '.webp', icon: 'fa-bolt' },
+            { id: 'image/avif', label: 'AVIF', ext: '.avif', icon: 'fa-magic' },
+            { id: 'image/bmp', label: 'BMP', ext: '.bmp', icon: 'fa-cube' },
+            { id: 'image/tiff', label: 'TIFF', ext: '.tiff', icon: 'fa-print' },
+            { id: 'image/x-icon', label: 'ICO', ext: '.ico', icon: 'fa-window-maximize' },
+            { id: 'image/gif', label: 'GIF', ext: '.gif', icon: 'fa-film' }
+        ];
 
         const el = {
             dropZone: document.getElementById('dropZone'),
             fileInput: document.getElementById('fileInput'),
             uploadSection: document.getElementById('uploadSection'),
             editorSection: document.getElementById('editorSection'),
-            previewContainer: document.getElementById('previewContainer'),
+            previewEl: document.getElementById('previewEl'),
             originalSize: document.getElementById('originalSize'),
             compressedSize: document.getElementById('compressedSize'),
             qualitySlider: document.getElementById('qualitySlider'),
             qualityLabel: document.getElementById('qualityLabel'),
             scaleSlider: document.getElementById('scaleSlider'),
             scaleLabel: document.getElementById('scaleLabel'),
-            formatSelect: document.getElementById('formatSelect'),
             downloadBtn: document.getElementById('downloadBtn'),
             resetBtn: document.getElementById('resetBtn'),
             fileInfoDisplay: document.getElementById('fileInfoDisplay'),
             loader: document.getElementById('loader'),
-            loaderText: document.getElementById('loaderText'),
-            progressFill: document.getElementById('progressFill'),
-            imageSettings: document.getElementById('imageSettings'),
-            mediaSettings: document.getElementById('mediaSettings'),
-            bitrateSelect: document.getElementById('bitrateSelect'),
             toast: document.getElementById('toast'),
             toastText: document.getElementById('toastText'),
-            modeIcon: document.getElementById('modeIcon'),
-            dropText: document.getElementById('dropText')
+            formatSearch: document.getElementById('formatSearch'),
+            formatOptionsList: document.getElementById('formatOptionsList')
         };
 
         let state = {
-            mode: 'image',
-            file: null,
-            originalUrl: null,
-            ffmpegLoaded: false
+            originalFile: null,
+            originalImage: null,
+            currentUrl: null,
+            compressedBlob: null,
+            selectedFormat: 'image/jpeg'
         };
 
-        const formats = {
-            image: [
-                { val: 'image/jpeg', label: 'JPEG (รูปถ่าย)' },
-                { val: 'image/webp', label: 'WebP (ขนาดเล็ก/ทันสมัย)' },
-                { val: 'image/png', label: 'PNG (โปร่งใส)' }
-            ],
-            video: [
-                { val: 'video/mp4', label: 'MP4 (มาตรฐาน)' },
-                { val: 'video/webm', label: 'WebM (เว็บวิดีโอ)' },
-                { val: 'audio/mpeg', label: 'MP3 (แยกเฉพาะเสียงจากวิดีโอ)' },
-                { val: 'image/gif', label: 'GIF (ภาพเคลื่อนไหว)' }
-            ],
-            audio: [
-                { val: 'audio/mpeg', label: 'MP3 (มาตรฐาน)' },
-                { val: 'audio/wav', label: 'WAV (คุณภาพสูง)' },
-                { val: 'audio/ogg', label: 'OGG (เปิดกว้าง)' }
-            ]
-        };
+        function renderFormatList(filter = '') {
+            el.formatOptionsList.innerHTML = '';
+            const filtered = formatOptions.filter(o => 
+                o.label.toLowerCase().includes(filter.toLowerCase()) || 
+                o.ext.toLowerCase().includes(filter.toLowerCase())
+            );
 
-        // --- Core Functions ---
-
-        function setMode(newMode) {
-            state.mode = newMode;
-            document.querySelectorAll('.mode-tab').forEach(t => {
-                t.classList.remove('active', 'text-blue-600');
-                t.classList.add('text-slate-500');
+            filtered.forEach(opt => {
+                const isActive = state.selectedFormat === opt.id;
+                const card = document.createElement('div');
+                card.className = `format-item flex flex-col items-center justify-center p-2.5 rounded-xl border cursor-pointer ${isActive ? 'active' : 'bg-slate-50 border-slate-100 hover:border-indigo-200'}`;
+                card.innerHTML = `
+                    <i class="fas ${opt.icon} mb-1 text-sm ${isActive ? 'text-white' : 'text-slate-400'}"></i>
+                    <span class="text-[10px] font-bold">${opt.label}</span>
+                `;
+                card.onclick = () => {
+                    state.selectedFormat = opt.id;
+                    renderFormatList(el.formatSearch.value);
+                    processImage();
+                };
+                el.formatOptionsList.appendChild(card);
             });
-            document.getElementById(`tab-${newMode}`).classList.add('active');
-            document.getElementById(`tab-${newMode}`).classList.remove('text-slate-500');
-            
-            updateUploadUI();
-            updateFormatSelect();
-            
-            el.imageSettings.classList.toggle('hidden', newMode !== 'image');
-            el.mediaSettings.classList.toggle('hidden', newMode === 'image');
         }
 
-        function updateUploadUI() {
-            const icons = { image: 'fa-images', video: 'fa-video', audio: 'fa-file-audio' };
-            const texts = { image: 'ลากไฟล์รูปภาพมาวางที่นี่', video: 'ลากไฟล์วิดีโอมาวางที่นี่', audio: 'ลากไฟล์เสียงมาวางที่นี่' };
-            el.modeIcon.innerHTML = `<i class="fas ${icons[state.mode]}"></i>`;
-            el.dropText.textContent = texts[state.mode];
-        }
-
-        function updateFormatSelect() {
-            el.formatSelect.innerHTML = formats[state.mode].map(f => `<option value="${f.val}">${f.label}</option>`).join('');
-        }
-
-        // --- Events ---
-
+        el.formatSearch.oninput = (e) => renderFormatList(e.target.value);
         el.dropZone.onclick = () => el.fileInput.click();
         el.dropZone.ondragover = (e) => { e.preventDefault(); el.dropZone.classList.add('drag-over'); };
         el.dropZone.ondragleave = () => el.dropZone.classList.remove('drag-over');
@@ -296,200 +302,80 @@
         };
 
         el.fileInput.onchange = (e) => { if(e.target.files.length) handleFile(e.target.files[0]); };
-        
-        el.qualitySlider.oninput = (e) => {
-            el.qualityLabel.textContent = `${e.target.value}%`;
-            if (state.mode === 'image') processImagePreview();
-        };
-
-        el.scaleSlider.oninput = (e) => {
-            el.scaleLabel.textContent = `${e.target.value}%`;
-            if (state.mode === 'image') processImagePreview();
-        };
-
+        el.qualitySlider.oninput = (e) => { el.qualityLabel.textContent = `${e.target.value}%`; processImage(); };
+        el.scaleSlider.oninput = (e) => { el.scaleLabel.textContent = `${e.target.value}%`; processImage(); };
         el.resetBtn.onclick = () => location.reload();
 
-        el.downloadBtn.onclick = async () => {
-            if (state.mode === 'image') {
-                triggerImageDownload();
-            } else {
-                await processMediaWithFFmpeg();
-            }
+        el.downloadBtn.onclick = () => {
+            if (!state.compressedBlob) return;
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(state.compressedBlob);
+            const selectedOpt = formatOptions.find(o => o.id === state.selectedFormat);
+            link.download = `Studio_${Date.now()}${selectedOpt.ext}`;
+            link.click();
+            showToast('Download complete!');
         };
 
-        // --- Handling ---
-
         function handleFile(file) {
-            const type = file.type.split('/')[0];
-            
-            // Allow Video files in Audio mode for easier conversion (Video to MP3)
-            if (state.mode === 'image' && type !== 'image') return showToast('กรุณาเลือกไฟล์รูปภาพ');
-            if (state.mode === 'video' && type !== 'video') return showToast('กรุณาเลือกไฟล์วิดีโอ');
-            if (state.mode === 'audio' && (type !== 'audio' && type !== 'video')) return showToast('กรุณาเลือกไฟล์เสียงหรือวิดีโอ');
-
-            state.file = file;
+            if (!file.type.startsWith('image/')) return showToast('Images only please');
+            state.originalFile = file;
             el.originalSize.textContent = formatSize(file.size);
-            el.uploadSection.classList.add('hidden');
-            el.editorSection.classList.remove('hidden');
-
-            const url = URL.createObjectURL(file);
-            state.originalUrl = url;
-            
-            setupPreview(url);
-            if (state.mode === 'image') processImagePreview();
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    state.originalImage = img;
+                    el.uploadSection.classList.add('hidden');
+                    el.editorSection.classList.remove('hidden');
+                    el.editorSection.classList.add('animate-fade-in');
+                    processImage();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
         }
 
-        function setupPreview(url) {
-            el.previewContainer.innerHTML = '';
-            el.previewContainer.appendChild(el.loader); 
-
-            if (state.mode === 'image') {
-                const img = document.createElement('img');
-                img.id = 'previewEl';
-                img.className = 'max-w-full max-h-full object-contain';
-                img.src = url;
-                el.previewContainer.appendChild(img);
-            } else if (state.mode === 'video' || (state.mode === 'audio' && state.file.type.startsWith('video'))) {
-                const video = document.createElement('video');
-                video.id = 'previewEl';
-                video.className = 'max-w-full max-h-full';
-                video.controls = true;
-                video.src = url;
-                el.previewContainer.appendChild(video);
-            } else {
-                const audioContainer = document.createElement('div');
-                audioContainer.className = 'flex flex-col items-center p-8 w-full';
-                audioContainer.innerHTML = `
-                    <i class="fas fa-music text-5xl text-blue-200 mb-4"></i>
-                    <audio id="previewEl" controls class="w-full"></audio>
-                    <p class="mt-4 text-slate-400 text-sm truncate max-w-xs">${state.file.name}</p>
-                `;
-                el.previewContainer.appendChild(audioContainer);
-                document.getElementById('previewEl').src = url;
-            }
-        }
-
-        function processImagePreview() {
-            const img = new Image();
-            img.onload = () => {
+        let timer;
+        function processImage() {
+            if (!state.originalImage) return;
+            el.loader.classList.remove('hidden');
+            clearTimeout(timer);
+            timer = setTimeout(() => {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
                 const scale = el.scaleSlider.value / 100;
-                canvas.width = img.width * scale;
-                canvas.height = img.height * scale;
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                
-                const quality = el.qualitySlider.value / 100;
-                const format = el.formatSelect.value;
-                
+                const w = Math.max(1, Math.round(state.originalImage.width * scale));
+                const h = Math.max(1, Math.round(state.originalImage.height * scale));
+                canvas.width = w; canvas.height = h;
+                el.fileInfoDisplay.textContent = `${w}x${h}`;
+                ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(state.originalImage, 0, 0, w, h);
                 canvas.toBlob((blob) => {
-                    if (blob) {
-                        el.compressedSize.textContent = `~ ${formatSize(blob.size)}`;
-                        document.getElementById('previewEl').src = URL.createObjectURL(blob);
-                        el.fileInfoDisplay.textContent = `${canvas.width} x ${canvas.height} px`;
-                    }
-                }, format, quality);
-            };
-            img.src = state.originalUrl;
-        }
-
-        async function processMediaWithFFmpeg() {
-            if (!state.ffmpegLoaded) {
-                el.loader.classList.remove('hidden');
-                el.loaderText.textContent = "กำลังโหลดระบบจัดการสื่อ...";
-                try {
-                    await ffmpeg.load();
-                    state.ffmpegLoaded = true;
-                } catch (err) {
-                    showToast('โหลดระบบไม่สำเร็จ');
+                    state.compressedBlob = blob;
+                    el.compressedSize.textContent = formatSize(blob.size);
+                    const red = ((1 - (blob.size / state.originalFile.size)) * 100).toFixed(0);
+                    if (red > 0) el.compressedSize.innerHTML = `${formatSize(blob.size)} <span class="text-[9px] bg-white/20 px-1.5 py-0.5 rounded-full ml-1">-${red}%</span>`;
+                    if (state.currentUrl) URL.revokeObjectURL(state.currentUrl);
+                    state.currentUrl = URL.createObjectURL(blob);
+                    el.previewEl.src = state.currentUrl;
                     el.loader.classList.add('hidden');
-                    return;
-                }
-            }
-
-            el.loader.classList.remove('hidden');
-            el.progressFill.style.width = '0%';
-
-            ffmpeg.setProgress(({ ratio }) => {
-                const percent = Math.max(0, Math.min(100, Math.round(ratio * 100)));
-                el.progressFill.style.width = `${percent}%`;
-                el.loaderText.textContent = `กำลังแปลงไฟล์: ${percent}%`;
-            });
-
-            const inputName = 'input_' + state.file.name.replace(/\s+/g, '_');
-            const targetMime = el.formatSelect.value;
-            let outputExt = targetMime.split('/')[1].replace('mpeg', 'mp3');
-            const outputName = `output_${Date.now()}.${outputExt}`;
-
-            try {
-                ffmpeg.FS('writeFile', inputName, await fetchFile(state.file));
-
-                let args = ['-i', inputName];
-                const bitrate = el.bitrateSelect.value;
-                
-                if (targetMime === 'audio/mpeg' || targetMime.startsWith('audio/')) {
-                    // Audio extraction or conversion
-                    if (bitrate === 'low') args.push('-ab', '128k');
-                    else if (bitrate === 'medium') args.push('-ab', '192k');
-                    else args.push('-ab', '320k');
-                    
-                    // If video to audio, disable video stream
-                    if (state.file.type.startsWith('video/')) args.push('-vn');
-                } else if (targetMime.startsWith('video/')) {
-                    // Video conversion
-                    if (bitrate === 'low') args.push('-b:v', '800k', '-crf', '30');
-                    else if (bitrate === 'medium') args.push('-b:v', '2000k', '-crf', '24');
-                    else args.push('-b:v', '4000k', '-crf', '18');
-                }
-
-                args.push(outputName);
-                await ffmpeg.run(...args);
-                
-                const data = ffmpeg.FS('readFile', outputName);
-                const blob = new Blob([data.buffer], { type: targetMime });
-                
-                el.compressedSize.textContent = formatSize(blob.size);
-                
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = `media_hub_${Date.now()}.${outputExt}`;
-                link.click();
-                
-                showToast('สำเร็จ! เริ่มการดาวน์โหลด');
-            } catch (e) {
-                showToast('เกิดข้อผิดพลาดในการประมวลผล');
-                console.error(e);
-            } finally {
-                el.loader.classList.add('hidden');
-                el.progressFill.style.width = '0%';
-            }
+                }, state.selectedFormat, el.qualitySlider.value / 100);
+            }, 60);
         }
 
-        function triggerImageDownload() {
-            const preview = document.getElementById('previewEl');
-            const link = document.createElement('a');
-            link.href = preview.src;
-            const ext = el.formatSelect.value.split('/')[1];
-            link.download = `compressed_${Date.now()}.${ext}`;
-            link.click();
-            showToast('ดาวน์โหลดรูปภาพแล้ว');
+        function formatSize(b) {
+            if (!b) return '0 B';
+            const k = 1024, i = Math.floor(Math.log(b) / Math.log(k));
+            return parseFloat((b / Math.pow(k, i)).toFixed(1)) + ' ' + ['B', 'KB', 'MB', 'GB'][i];
         }
 
-        function formatSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
-
-        function showToast(text) {
-            el.toastText.textContent = text;
+        function showToast(t) {
+            el.toastText.textContent = t;
             el.toast.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => { el.toast.classList.add('translate-y-20', 'opacity-0'); }, 3000);
+            setTimeout(() => el.toast.classList.add('translate-y-20', 'opacity-0'), 2500);
         }
 
-        setMode('image');
+        renderFormatList();
     </script>
 </body>
 </html>
